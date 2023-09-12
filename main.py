@@ -3,6 +3,7 @@ import webbrowser
 from neo4j import GraphDatabase
 import scraper
 import time
+import click
 from Util import Util
 from CPEInserter import CPEInserter
 from CWEInserter import CWEInserter
@@ -10,19 +11,35 @@ from CVEInserter import CVEInserter
 from CAPECInserter import CAPECInserter
 from DatabaseUtil import DatabaseUtil
 
-# Define the functions that will be running
-def run(url_db, username, password, directory, neo4jbrowser, graphlytic):
+def download_datasets(import_path, cpe, cve, cwe, capec, all):
     try:
         start_time = time.time()
 
-        import_path = Util.set_import_path(directory)
+        import_path = Util.set_import_path(import_path)
 
         Util.clear_directory(import_path)
-        scraper.download_datasets(import_path)
+
+        scraper.download_datasets(import_path, cpe, cve, cwe, capec, all)
 
         Util.copy_files_cypher_script(import_path)
 
-        driver = GraphDatabase.driver(url_db, auth=(username, password))
+        end_time = time.time()
+
+        execution_time = end_time - start_time
+        print(f"Import finished in: {execution_time:.6f} seconds")
+
+    except Exception as e:
+        print(f"Error occurred while downloading files: {e}")
+
+    return
+
+def ingest_datasets(username, password, db_url, import_path, cpe, cve, cwe, capec, all):
+    try:
+        start_time = time.time()
+
+        import_path = Util.set_import_path(import_path)
+
+        driver = GraphDatabase.driver(db_url, auth=(username, password))
 
         cpeInserter = CPEInserter(driver, import_path)
         cveInserter = CVEInserter(driver, import_path)
@@ -32,10 +49,21 @@ def run(url_db, username, password, directory, neo4jbrowser, graphlytic):
 
         databaseUtil.clear()
         databaseUtil.schema_script()
-        cpeInserter.cpe_insertion()
-        capecInserter.capec_insertion()
-        cveInserter.cve_insertion()
-        cweInserter.cwe_insertion()
+
+        if all:
+            cpeInserter.cpe_insertion()
+            capecInserter.capec_insertion()
+            cveInserter.cve_insertion()
+            cweInserter.cwe_insertion()
+        else:
+            if cpe:
+                cpeInserter.cpe_insertion()
+            if cve:
+                cveInserter.cve_insertion()
+            if cwe:
+                cweInserter.cwe_insertion()
+            if capec:
+                capecInserter.capec_insertion()
 
         driver.close()
 
@@ -47,56 +75,76 @@ def run(url_db, username, password, directory, neo4jbrowser, graphlytic):
     except Exception as e:
         print(f"Error occurred: {e}")
         driver.close()
-
-    if neo4jbrowser:
-        webbrowser.open("http://localhost:7474")
-    if graphlytic:
-        webbrowser.open("http://localhost:8110/")
     return
 
+@click.group
+def cli():
+    pass
 
-def main():
-    # Initialize the parser
-    parser = argparse.ArgumentParser(
-        description=" +-+-+-+-+-+-+-+-+ \n |G|r|a|p|h|K|e|r| \n +-+-+-+-+-+-+-+-+"
-                    "\n \nWith GraphKer you can have the most recent update of cyber-security vulnerabilities, weaknesses, attack patterns and platforms "
-                    "from MITRE and NIST, in an very useful and user friendly way provided by neo4j graph databases! \n \n"
-                    "--Search, Export Data and Analytics, Enrich your Skills-- \n \n"
-                    "**Created by Adamantios - Marios Berzovitis, Cybersecurity Expert MSc, BSc** \n"
-                    "Diploma Research - MSc @ Distributed Systems, Security and Emerging Information Technologies | University Of Piraeus \n"
-                    "Co-Working with Cyber Security Research Lab | University Of Piraeus \n"
-                    "LinkedIn:https://tinyurl.com/p57w4ntu \n"
-                    "Github:https://github.com/amberzovitis \n \n"
-                    "Enjoy! Provide Feedback!", formatter_class=argparse.RawTextHelpFormatter
-    )
-
-    # Add Parameters
-    parser.add_argument('-u', '--urldb', required=True,
-                        help="Insert bolt url of your neo4j graph database.")
-    parser.add_argument('-n', '--username', required=True,
-                        help="Insert username of your graph database.")
-    parser.add_argument('-p', '--password', required=True,
-                        help="Insert password of your graph database.")
-    parser.add_argument('-d', '--directory', required=True,
-                        help="Insert import path of your graph database.")
-    parser.add_argument('-b', '--neo4jbrowser', choices=['y', 'Y'],
-                        help="Press y or Y to open neo4jbrowser after the insertion of elements in your graph database.")
-    parser.add_argument('-g', '--graphlytic', choices=['y', 'Y'],
-                        help="Press y or Y to open Graphlytic app after the insertion of elements in your graph database.")
-
-    args = parser.parse_args()
-    if args.neo4jbrowser == "y" or args.neo4jbrowser == "Y":
-        neo4jbrowser_open = True
+@cli.command()
+@click.option('--cpe', is_flag=True, help='Download CPE files')
+@click.option('--cve', is_flag=True, help='Download CVE files')
+@click.option('--cwe', is_flag=True, help='Download CWE files')
+@click.option('--capec', is_flag=True, help='Download CAPEC files')
+@click.option('--all', is_flag=True, help='Download CAPEC files')
+@click.option('--import-path', required=True, help='Neo4j import path')
+def download_files(import_path, cpe, cve, cwe, capec, all):
+    if all and any([cpe, cve, cwe, capec]):
+        click.echo("Please don't mix between all and specific files")
+    elif (all and not any([cpe, cve, cwe, capec])) or any([cpe, cve, cwe, capec]):
+        download_datasets(import_path, cpe, cve, cwe, capec, all)
     else:
-        neo4jbrowser_open = False
-    if args.graphlytic == "y" or args.neo4jbrowser == "Y":
-        graphlytic_open = True
-    else:
-        graphlytic_open = False
-    run(args.urldb, args.username, args.password,
-        args.directory, neo4jbrowser_open, graphlytic_open)
+        click.echo("Please choose an option all or at least one filetype from [cpe, cve, cwe, capec]")
     return
 
+@cli.command()
+@click.option('--username', required=True, help='Neo4j username')
+@click.option('--password', required=True, help='Neo4j password')
+@click.option('--db-url', required=True, help='Neo4j database url')
+@click.option('--import-path', required=True, help='Neo4j import path')
+@click.option('--cpe', is_flag=True, help='Download CPE files')
+@click.option('--cve', is_flag=True, help='Download CVE files')
+@click.option('--cwe', is_flag=True, help='Download CWE files')
+@click.option('--capec', is_flag=True, help='Download CAPEC files')
+@click.option('--all', is_flag=True, help='Download CAPEC files')
+def ingest_files(username, password, db_url, import_path, cpe, cve, cwe, capec, all):
+    if username and password and db_url and import_path:
+        if all and any([cpe, cve, cwe, capec]):
+            click.echo("Please don't mix between all and (cpe, cve, cwe, capec)")
+        elif (all and not any([cpe, cve, cwe, capec])) or (any([cpe, cve, cwe, capec])):
+            ingest_datasets(username, password, db_url, import_path, cpe, cve, cwe, capec, all)
+        else:
+            click.echo("Please choose an option all or at least one filetype from [cpe, cve, cwe, capec]")
+    else:
+        click.echo("Options must not be empty")
+    return
+
+@cli.command()
+@click.option('--cpe', is_flag=True, help='Download CPE files')
+@click.option('--cve', is_flag=True, help='Download CVE files')
+@click.option('--cwe', is_flag=True, help='Download CWE files')
+@click.option('--capec', is_flag=True, help='Download CAPEC files')
+@click.option('--all', is_flag=True, help='Download CAPEC files')
+@click.option('--username', required=True, help='Neo4j username')
+@click.option('--password', required=True, help='Neo4j password')
+@click.option('--db-url', required=True, help='Neo4j database url')
+@click.option('--import-path', required=True, help='Neo4j import path')
+def download_and_ingest(cpe, cve, cwe, capec, all, username, password, db_url, import_path):
+    if username and password and db_url and import_path:
+        if all and any([cpe, cve, cwe, capec]):
+            click.echo("Please don't mix between all and (cpe, cve, cwe, capec)")
+        elif (all and not any([cpe, cve, cwe, capec])) or (any([cpe, cve, cwe, capec])):
+            download_datasets(import_path, cpe, cve, cwe, capec, all)
+            ingest_datasets(username, password, db_url, import_path, cpe, cve, cwe, capec, all)
+        else:
+            click.echo("Please choose an option all or at least one filetype from [cpe, cve, cwe, capec]")
+    else:
+        click.echo("Options must not be empty")
+    return
 
 if __name__ == '__main__':
-    main()
+    try:
+        cli()
+    except click.exceptions.MissingParameter as e:
+        # Handle missing parameters
+        click.echo(f'Missing parameter: {e.param}')

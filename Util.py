@@ -59,3 +59,19 @@ class Util:
 
         shutil.copy2(current_path + "ConstraintsIndexes.cypher", to_path)
         shutil.copy2(current_path + "ClearConstraintsIndexes.cypher", to_path)
+
+        shutil.copy2(current_path + "CAPECs_attack.cypher", to_path)
+        shutil.copy2(current_path + "CAPECs_category.cypher", to_path)
+        shutil.copy2(current_path + "CAPECs_reference.cypher", to_path)
+        shutil.copy2(current_path + "CAPECs_view.cypher", to_path)
+        shutil.copy2(current_path + "CAPECs.cypher", to_path)
+
+        shutil.copy2(current_path + "CPEs.cypher", to_path)
+
+        shutil.copy2(current_path + "CVEs.cypher", to_path)
+
+        shutil.copy2(current_path + "CWEs_category.cypher", to_path)
+        shutil.copy2(current_path + "CWEs_reference.cypher", to_path)
+        shutil.copy2(current_path + "CWEs_view.cypher", to_path)
+        shutil.copy2(current_path + "CWEs_weakness.cypher", to_path)
+        shutil.copy2(current_path + "CWEs.cypher", to_path)

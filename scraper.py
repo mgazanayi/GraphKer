@@ -132,11 +132,21 @@ def download_files_capec(import_path):
     transform_big_json_files_to_multiple_json_files(extract_dir, 'capec_view','Attack_Pattern_Catalog.Views.View')
 
 
-def download_datasets(import_path):
-    download_files_cve(import_path)
-    download_files_cpe(import_path)
-    download_files_cwe(import_path)
-    download_files_capec(import_path)
+def download_datasets(import_path, cpe, cve, cwe, capec, all):
+    if not all:
+        if cpe:
+            download_files_cpe(import_path)
+        if cve:
+            download_files_cve(import_path)
+        if cwe:
+            download_files_cwe(import_path)
+        if capec:
+            download_files_capec(import_path)
+    else:
+        download_files_cve(import_path)
+        download_files_cpe(import_path)
+        download_files_cwe(import_path)
+        download_files_capec(import_path)
 
 # Define the function that makes the HTTP request with retry
 def make_http_request_with_retry(url, retries=0):
