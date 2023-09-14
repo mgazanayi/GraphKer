@@ -36,39 +36,40 @@ CALL apoc.periodic.iterate(
 
         // CVSS3
           MERGE (p:CVSS_3 {
-            Name: item.cve.CVE_data_meta.ID + "_CVSS3"
+            Name: apoc.util.sha512([item.impact.baseMetricV3.cvssV3.version, item.impact.baseMetricV3.cvssV3.vectorString, item.impact.baseMetricV3.cvssV3.attackVector, item.impact.baseMetricV3.cvssV3.attackComplexity, item.impact.baseMetricV3.cvssV3.privilegesRequired, item.impact.baseMetricV3.cvssV3.userInteraction, item.impact.baseMetricV3.cvssV3.scope, item.impact.baseMetricV3.cvssV3.confidentialityImpact, item.impact.baseMetricV3.cvssV3.integrityImpact, item.impact.baseMetricV3.cvssV3.availabilityImpact, item.impact.baseMetricV3.cvssV3.baseScore, item.impact.baseMetricV3.cvssV3.baseSeverity, item.cve.impact.baseMetricV3.exploitabilityScore, item.cve.impact.baseMetricV3.impactScore])
           })
-            ON CREATE  SET p.Version = item.impact.baseMetricV3.cvssV3.version, p.Vector_String = item.impact.baseMetricV3.
-              cvssV3.vectorString,
-            p.Attack_Vector = item.impact.baseMetricV3.cvssV3.attackVector, p.Attack_Complexity = item.impact.baseMetricV3.
-              cvssV3.attackComplexity,
-            p.Privileges_Required = item.impact.baseMetricV3.cvssV3.privilegesRequired, p.User_Interaction = item.impact.
-              baseMetricV3.cvssV3.userInteraction,
-            p.Scope = item.impact.baseMetricV3.cvssV3.scope, p.Confidentiality_Impact = item.impact.baseMetricV3.cvssV3.
-              confidentialityImpact,
-            p.Integrity_Impact = item.impact.baseMetricV3.cvssV3.integrityImpact, p.Availability_Impact = item.impact.
-              baseMetricV3.cvssV3.availabilityImpact,
-            p.Base_Score = item.impact.baseMetricV3.cvssV3.baseScore, p.Base_Severity = item.impact.baseMetricV3.cvssV3.
-              baseSeverity,
+            ON CREATE  SET p.Version = item.impact.baseMetricV3.cvssV3.version,
+            p.Vector_String = item.impact.baseMetricV3.cvssV3.vectorString,
+            p.Attack_Vector = item.impact.baseMetricV3.cvssV3.attackVector,
+            p.Attack_Complexity = item.impact.baseMetricV3.cvssV3.attackComplexity,
+            p.Privileges_Required = item.impact.baseMetricV3.cvssV3.privilegesRequired,
+            p.User_Interaction = item.impact.baseMetricV3.cvssV3.userInteraction,
+            p.Scope = item.impact.baseMetricV3.cvssV3.scope,
+            p.Confidentiality_Impact = item.impact.baseMetricV3.cvssV3.confidentialityImpact,
+            p.Integrity_Impact = item.impact.baseMetricV3.cvssV3.integrityImpact, 
+            p.Availability_Impact = item.impact.baseMetricV3.cvssV3.availabilityImpact,
+            p.Base_Score = item.impact.baseMetricV3.cvssV3.baseScore,
+            p.Base_Severity = item.impact.baseMetricV3.cvssV3.baseSeverity,
             p.Exploitability_Score = item.cve.impact.baseMetricV3.exploitabilityScore,
             p.Impact_Score = item.cve.impact.baseMetricV3.impactScore
           MERGE (a)-[:CVSS3_Impact]->(p)
 
-        // CVSS2
+          // CVSS2
           MERGE (l:CVSS_2 {
-            Name: item.cve.CVE_data_meta.ID + "_CVSS2"
+            Name: apoc.util.sha512([item.impact.baseMetricV2.cvssV2.version, item.impact.baseMetricV2.cvssV2.vectorString, item.impact.baseMetricV2.cvssV2.accessVector, item.impact.baseMetricV2.cvssV2.accessComplexity, item.impact.baseMetricV2.cvssV2.authentication, item.impact.baseMetricV2.cvssV2.confidentialityImpact, item.impact.baseMetricV2.cvssV2.integrityImpact, item.impact.baseMetricV2.cvssV2.availabilityImpact, item.impact.baseMetricV2.cvssV2.baseScore, item.cve.impact.baseMetricV2.exploitabilityScore, item.cve.impact.baseMetricV2.severity, item.cve.impact.baseMetricV2.impactScore, item.cve.impact.baseMetricV2.acInsufInfo, item.cve.impact.baseMetricV2.obtainAllPrivileges, item.cve.impact.baseMetricV2.obtainUserPrivileges, item.cve.impact.baseMetricV2.obtainOtherPrivileges, item.cve.impact.baseMetricV2.userInteractionRequired])
           })
-            ON CREATE  SET l.Version = item.impact.baseMetricV2.cvssV2.version, l.Vector_String = item.impact.baseMetricV2.
-              cvssV2.vectorString,
-            l.Access_Vector = item.impact.baseMetricV2.cvssV2.accessVector, l.Access_Complexity = item.impact.baseMetricV2.
-              cvssV2.accessComplexity,
+            ON CREATE  SET l.Version = item.impact.baseMetricV2.cvssV2.version,
+            l.Vector_String = item.impact.baseMetricV2.cvssV2.vectorString,
+            l.Access_Vector = item.impact.baseMetricV2.cvssV2.accessVector,
+            l.Access_Complexity = item.impact.baseMetricV2.cvssV2.accessComplexity,
             l.Authentication = item.impact.baseMetricV2.cvssV2.authentication,
             l.Confidentiality_Impact = item.impact.baseMetricV2.cvssV2.confidentialityImpact,
             l.Integrity_Impact = item.impact.baseMetricV2.cvssV2.integrityImpact,
             l.Availability_Impact = item.impact.baseMetricV2.cvssV2.availabilityImpact,
             l.Base_Score = item.impact.baseMetricV2.cvssV2.baseScore,
             l.Exploitability_Score = item.cve.impact.baseMetricV2.exploitabilityScore,
-            l.Severity = item.cve.impact.baseMetricV2.severity, l.Impact_Score = item.cve.impact.baseMetricV2.impactScore,
+            l.Severity = item.cve.impact.baseMetricV2.severity,
+            l.Impact_Score = item.cve.impact.baseMetricV2.impactScore,
             l.acInsufInfo = item.cve.impact.baseMetricV2.acInsufInfo,
             l.Obtain_All_Privileges = item.cve.impact.baseMetricV2.obtainAllPrivileges,
             l.Obtain_User_Privileges = item.cve.impact.baseMetricV2.obtainUserPrivileges,
