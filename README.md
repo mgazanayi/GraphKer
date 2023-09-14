@@ -107,16 +107,55 @@ _3 + 1 Steps to run GraphKer Tool_
 
 # **Run GraphKer**
 
+## Download files
+
+You can download `CPE`, `CVE`, `CWE` and `CAPEC` files separately or at once by running the `download-files` command:
+
+All the files:
+
+```@shell
+python3 main.py download-files --all --import-path=/PATH_TO_DB_IMPORT/
 ```
-// Default
-python main.py -u BOLT_URL -n USERNAME -p PASSWORD -d IMPORT_PATH
-// Run and Open Neo4j Browser
-python main.py -u BOLT_URL -n USERNAME -p PASSWORD -d IMPORT_PATH -b y
-// Run and Open Graphlytic App
-python main.py -u BOLT_URL -n USERNAME -p PASSWORD -d IMPORT_PATH -g y
-// Default Run Example in Ubuntu
-sudo python3 main.py -u BOLT_URL -n USERNAME -p PASSWORD -d /var/lib/neo4j/import/
-``` 
+
+Specific files:
+
+```@shell
+python3 main.py download-files --cwe --capec --cve --cpe --import-path=/PATH_TO_DB_IMPORT/
+```
+
+## Ingest files
+
+Once files are downloaded, you can ingest them by running the `download-files` command:
+
+All the files:
+
+```@shell
+python3 main.py ingest-files --all --import-path=/PATH_TO_DB_IMPORT/
+```
+
+Specific files:
+
+```@shell
+python3 main.py ingest-files --cwe --capec --cve --cpe --import-path=/PATH_TO_DB_IMPORT/
+```
+
+Please note that the files to ingest must be downloaded and present in the import-path
+
+## Download and Ingest files
+
+You can execute the above operations at once by running the `download-and-ingest` command:
+
+All the files:
+
+```@shell
+python3 main.py download-and-ingest --all --import-path=/PATH_TO_DB_IMPORT/
+```
+
+Specific files:
+
+```@shell
+python3 main.py download-and-ingest --cwe --capec --cve --cpe --import-path=/PATH_TO_DB_IMPORT/
+```
 
 _Default Bolt URL for Neo4j: bolt://localhost:7687_
 

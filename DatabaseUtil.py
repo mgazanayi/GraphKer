@@ -18,19 +18,19 @@ class DatabaseUtil:
             try:
                 with self.driver.session() as session:
                     session.run(query)
-            except exceptions.CypherError as e:
-                print(f"CypherError: {e}")
+            except exceptions.Neo4jError as e:
+                print(f"Neo4jError: {e}")
             print(f"{label} deleted successfuly")
 
         end_time = time.time()
 
         print(f"\nPrevious Data have been deleted within {end_time - start_time}")
 
-        self.clearSchema()
+        self.clear_schema()
         print("\nDatabase is clear and ready for imports.")
 
     # Clear Schema
-    def clearSchema(self):
+    def clear_schema(self):
         # Clear Database from existing constraints and indexes
         print(f"\Start cleaning Data from existing constraints and indexes")
         start_time = time.time()
@@ -38,8 +38,8 @@ class DatabaseUtil:
         try:
             with self.driver.session() as session:
                 session.run(query)
-        except exceptions.CypherError as e:
-            print(f"CypherError: {e}")
+        except exceptions.Neo4jError as e:
+            print(f"Neo4jError: {e}")
         end_time = time.time()
         print(f"\nPrevious Schema has been deleted {end_time - start_time}")
 
@@ -52,7 +52,7 @@ class DatabaseUtil:
         try:
             with self.driver.session() as session:
                 session.run(query)
-        except exceptions.CypherError as e:
-            print(f"CypherError: {e}")
+        except exceptions.Neo4jError as e:
+            print(f"Neo4jError: {e}")
         end_time = time.time()
         print(f"\nSchema with Constraints and Indexes insertion completed {end_time - start_time}")

@@ -17,7 +17,7 @@ def download_datasets(import_path, cpe, cve, cwe, capec, all):
 
         import_path = Util.set_import_path(import_path)
 
-        Util.clear_directory(import_path)
+        Util.clear_directories(import_path, cpe, cve, cwe, capec, all)
 
         scraper.download_datasets(import_path, cpe, cve, cwe, capec, all)
 
@@ -33,7 +33,7 @@ def download_datasets(import_path, cpe, cve, cwe, capec, all):
 
     return
 
-def ingest_datasets(username, password, db_url, import_path, cpe, cve, cwe, capec, all):
+def ingest_datasets(username, password, db_url, import_path, cpe, cve, cwe, capec, all, clean_database):
     try:
         start_time = time.time()
 
@@ -47,8 +47,9 @@ def ingest_datasets(username, password, db_url, import_path, cpe, cve, cwe, cape
         capecInserter = CAPECInserter(driver, import_path)
         databaseUtil = DatabaseUtil(driver)
 
-        databaseUtil.clear()
-        databaseUtil.schema_script()
+        if clean_database:
+            databaseUtil.clear()
+            databaseUtil.schema_script()
 
         if all:
             cpeInserter.cpe_insertion()
@@ -107,12 +108,13 @@ def download_files(import_path, cpe, cve, cwe, capec, all):
 @click.option('--cwe', is_flag=True, help='Download CWE files')
 @click.option('--capec', is_flag=True, help='Download CAPEC files')
 @click.option('--all', is_flag=True, help='Download CAPEC files')
-def ingest_files(username, password, db_url, import_path, cpe, cve, cwe, capec, all):
+@click.option('--clean-database', is_flag=True, default=False, help='Remove entries from database (only cpe, cve, cwe and capec)')
+def ingest_files(username, password, db_url, import_path, cpe, cve, cwe, capec, all, clean_database):
     if username and password and db_url and import_path:
         if all and any([cpe, cve, cwe, capec]):
             click.echo("Please don't mix between all and (cpe, cve, cwe, capec)")
         elif (all and not any([cpe, cve, cwe, capec])) or (any([cpe, cve, cwe, capec])):
-            ingest_datasets(username, password, db_url, import_path, cpe, cve, cwe, capec, all)
+            ingest_datasets(username, password, db_url, import_path, cpe, cve, cwe, capec, all, clean_database)
         else:
             click.echo("Please choose an option all or at least one filetype from [cpe, cve, cwe, capec]")
     else:
@@ -125,17 +127,18 @@ def ingest_files(username, password, db_url, import_path, cpe, cve, cwe, capec, 
 @click.option('--cwe', is_flag=True, help='Download CWE files')
 @click.option('--capec', is_flag=True, help='Download CAPEC files')
 @click.option('--all', is_flag=True, help='Download CAPEC files')
+@click.option('--clean-database', is_flag=True, default=False, help='Remove entries from database (only cpe, cve, cwe and capec)')
 @click.option('--username', required=True, help='Neo4j username')
 @click.option('--password', required=True, help='Neo4j password')
 @click.option('--db-url', required=True, help='Neo4j database url')
 @click.option('--import-path', required=True, help='Neo4j import path')
-def download_and_ingest(cpe, cve, cwe, capec, all, username, password, db_url, import_path):
+def download_and_ingest(cpe, cve, cwe, capec, all, clean_database, username, password, db_url, import_path):
     if username and password and db_url and import_path:
         if all and any([cpe, cve, cwe, capec]):
             click.echo("Please don't mix between all and (cpe, cve, cwe, capec)")
         elif (all and not any([cpe, cve, cwe, capec])) or (any([cpe, cve, cwe, capec])):
             download_datasets(import_path, cpe, cve, cwe, capec, all)
-            ingest_datasets(username, password, db_url, import_path, cpe, cve, cwe, capec, all)
+            ingest_datasets(username, password, db_url, import_path, cpe, cve, cwe, capec, all, clean_database)
         else:
             click.echo("Please choose an option all or at least one filetype from [cpe, cve, cwe, capec]")
     else:

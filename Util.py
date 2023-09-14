@@ -4,14 +4,12 @@ import shutil
 
 class Util:
 
-    @staticmethod
     def replace_placeholder_with_value(line, files_by_type):
         for key in files_by_type.keys():
             if key in line:
                 return line.replace(key, Util.string_to_insert_from_files(files_by_type[key]))
         return line
 
-    @staticmethod
     def string_to_insert_from_files(files):
         stringToInsert = "\""
         for file in files:
@@ -19,7 +17,7 @@ class Util:
         stringToInsert = stringToInsert[:-3]
         return stringToInsert
     
-    # Clear Import Directory
+    @staticmethod
     def clear_directory(path):
         try:
             # List all files and directories inside the specified directory
@@ -39,13 +37,33 @@ class Util:
         except Exception as e:
             print(f"Error occurred: {e}")
     
+    def clear_directories(path, cpe, cve, cwe, capec, all):
+        if all:
+            Util.clear_directory(path)
+        else:
+            if cpe:
+                Util.clear_directory(path + "nist/cpe/")
+            if cve:
+                Util.clear_directory(path + "nist/cve/")
+            if cwe:
+                Util.clear_directory(path + "mitre_cwe/")
+            if capec:
+                Util.clear_directory(path + "mitre_capec/")
+
     # Set Import Directory
     def set_import_path(directory):
         current_os = platform.system()
         if (current_os == "Linux" or current_os == "Darwin"):
-            return directory
+            if directory[:len(directory)-1] == '/':
+                return directory
+            else:
+                return directory + "/"
         elif current_os == "Windows":
-            return directory.replace("\\", "\\\\") + "\\\\"
+            directory = directory.replace("\\", "\\\\") + "\\\\"
+            if directory[:len(directory)-1] == '\\':
+                return directory
+            else:
+                return directory + "\\"
 
 
     # Copy Cypher Script Schema Files to Import Path
