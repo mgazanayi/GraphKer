@@ -288,9 +288,11 @@ def slice_json_file(input_file, output_path, output_prefix, batch_size, json_arr
     if not os.path.exists(os.path.join(output_path, "splitted")):
         os.makedirs(os.path.join(output_path, "splitted"), exist_ok=True)
 
+    file_name = os.path.splitext(os.path.basename(input_file))[0]
+    print(f'=> [Splitting file] Actual file {file_name}')
     for i in range(0, length, batch_size):
         batch = data_array[i:i+batch_size]
-        output_file = f"{output_path}/splitted/{output_prefix}_output_file_{i//batch_size + 1}.json"
+        output_file = f"{output_path}/splitted/{output_prefix}_output_file_{file_name}_{i//batch_size + 1}.json"
         with open(output_file, 'w') as f_out:
             json.dump(batch, f_out, indent=4)
 
