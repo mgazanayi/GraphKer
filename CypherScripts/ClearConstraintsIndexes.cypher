@@ -18,6 +18,8 @@ DROP CONSTRAINT Mitigation if exists;
 
 DROP CONSTRAINT DetectionMethod if exists;
 
+DROP CONSTRAINT demonstrativeExample if exists;
+
 DROP CONSTRAINT capec if exists;
 
 DROP CONSTRAINT cweview if exists;

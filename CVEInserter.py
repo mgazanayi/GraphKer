@@ -1,8 +1,6 @@
 import os
 import time
 import fnmatch
-from fileType import FileType
-from Util import Util
 from neo4j import exceptions
 
 class CVEInserter:

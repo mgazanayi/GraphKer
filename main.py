@@ -49,7 +49,8 @@ def ingest_datasets(username, password, db_url, import_path, cpe, cve, cwe, cape
 
         if clean_database:
             databaseUtil.clear()
-            databaseUtil.schema_script()
+
+        databaseUtil.schema_script()
 
         if all:
             cpeInserter.cpe_insertion()

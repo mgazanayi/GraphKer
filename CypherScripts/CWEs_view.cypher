@@ -4,38 +4,38 @@ UNWIND [cweViewFilesToImport] AS files
 CALL apoc.periodic.iterate(
   'CALL apoc.load.json($files) YIELD value AS view RETURN view',
   '
-    MERGE (v:CWE_VIEW {ViewID: view.ID})
-    SET v.Name = view.Name,
-    v.Type = view.Type,
-    v.Status = view.Status,
-    v.Objective = apoc.convert.toString(view.Objective),
-    v.Filter = view.Filter,
-    v.Notes = apoc.convert.toString(view.Notes),
-    v.Submission_Name = view.Content_History.Submission.Submission_Name,
-    v.Submission_Date = view.Content_History.Submission.Submission_Date,
-    v.Submission_Organization = view.Content_History.Submission.Submission_Organization,
-    v.Modification = [value IN view.Content_History.Modification | apoc.convert.toString(value)]
+    MERGE (cweView:CWEView {id: toInteger(view.ID)})
+      SET cweView.name = view.Name,
+      cweView.type = view.Type,
+      cweView.status = view.Status,
+      cweView.objective = apoc.convert.toString(view.Objective),
+      cweView.filter = view.Filter,
+      cweView.notes = apoc.convert.toString(view.Notes),
+      cweView.submissionName = view.Content_History.Submission.Submission_Name,
+      cweView.submissionDate = datetime(view.Content_History.Submission.Submission_Date),
+      cweView.submissionOrganization = view.Content_History.Submission.Submission_Organization,
+      cweView.modification = [value IN view.Content_History.Modification | apoc.convert.toString(value)]
 
     // Insert Stakeholders for each View
     FOREACH (value IN view.Audience.Stakeholder |
-      MERGE (st:Stakeholder {Type: value.Type})
-      MERGE (v)-[rel:usefulFor]->(st)
+      MERGE (stakeholder:Stakeholder {type: value.Type})
+      MERGE (cweView)-[rel:USEFUL_FOR]->(stakeholder)
       SET rel.Description = value.Description
     )
 
     // Insert Members for each View
-    WITH v, view
+    WITH cweView, view
     FOREACH (member IN view.Members.Has_Member |
-      MERGE (MemberWeak:CWE {Name: "CWE-" + member.CWE_ID})
-      MERGE (v)-[:hasMember]->(MemberWeak)
+      MERGE (cweMember:CWE {id: "CWE-" + member.CWE_ID})
+      MERGE (cweView)-[:HAS_MEMBER]->(cweMember)
     )
 
     // ------------------------------------------------------------------------
     // Insert Public References for each View
-    WITH v, view
+    WITH cweView, view
     FOREACH (viewExReference IN view.References.Reference |
-      MERGE (viewRef:External_Reference_CWE {Reference_ID: viewExReference.External_Reference_ID})
-      MERGE (v)-[:hasExternal_Reference]->(viewRef)
+      MERGE (viewRef:CWEReference {id: viewExReference.External_Reference_ID})
+      MERGE (cweView)-[:HAS_EXTERNAL_REFERENCE]->(viewRef)
     )
   ',
   {batchSize:200, params: {files:files}}

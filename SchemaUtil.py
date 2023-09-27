@@ -1,6 +1,3 @@
-from fileType import FileType
-from Util import Util
-
 class SchemaUtil:
 
     def __init__(self, driver):

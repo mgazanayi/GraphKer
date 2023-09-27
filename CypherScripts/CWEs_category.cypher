@@ -4,31 +4,29 @@ UNWIND [cweCategoryFilesToImport] AS files
 CALL apoc.periodic.iterate(
   'CALL apoc.load.json($files) YIELD value AS category RETURN category',
   '
-    MERGE (c:CWE {
-      Name: "CWE-" + category.ID
-    })
-    SET c.Extended_Name = category.Name,
-    c.Status = category.Status,
-    c.Summary = apoc.convert.toString(category.Summary),
-    c.Notes = apoc.convert.toString(category.Notes),
-    c.Submission_Name = category.Content_History.Submission.Submission_Name,
-    c.Submission_Date = category.Content_History.Submission.Submission_Date,
-    c.Submission_Organization = category.Content_History.Submission.Submission_Organization,
-    c.Modification = [value IN category.Content_History.Modification | apoc.convert.toString(value)]
+    MERGE (cwe:CWE { id: "CWE-" + category.ID })
+      SET cwe.extendedName = category.Name,
+      cwe.status = category.Status,
+      cwe.summary = apoc.convert.toString(category.Summary),
+      cwe.notes = apoc.convert.toString(category.Notes),
+      cwe.submissionName = category.Content_History.Submission.Submission_Name,
+      cwe.submissionDate = datetime(category.Content_History.Submission.Submission_Date),
+      cwe.submissionOrganization = category.Content_History.Submission.Submission_Organization,
+      cwe.modification = [value IN category.Content_History.Modification | apoc.convert.toString(value)]
 
     // Insert Members for each Category
-    WITH c, category
+    WITH cwe, category
     FOREACH (member IN category.Relationships.Has_Member |
-      MERGE (MemberWeak:CWE {Name: "CWE-" + member.CWE_ID})
-      MERGE (c)-[:hasMember {ViewID: member.View_ID}]->(MemberWeak)
+      MERGE (cweMember:CWE {id: "CWE-" + member.CWE_ID})
+      MERGE (cwe)-[:HAS_MEMBER {viewId: toInteger(member.View_ID)}]->(cweMember)
     )
 
     // ------------------------------------------------------------------------
     // Insert Public References for each Category
-    WITH c, category
+    WITH cwe, category
     FOREACH (categoryExReference IN category.References.Reference |
-      MERGE (catRef:External_Reference_CWE {Reference_ID: categoryExReference.External_Reference_ID})
-      MERGE (c)-[:hasExternal_Reference]->(catRef)
+      MERGE (catRef:CWEReference {id: categoryExReference.External_Reference_ID})
+      MERGE (cwe)-[:HAS_EXTERNAL_REFERENCE]->(catRef)
     )
   ',
   {batchSize:200, params: {files:files}}

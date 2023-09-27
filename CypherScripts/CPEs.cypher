@@ -5,14 +5,14 @@ CALL apoc.periodic.iterate(
   '
     WITH value
     MERGE (cpe:CPE {
-      uri: value.cpe23Uri
+      id: value.cpe23Uri
     })
 
-    FOREACH (value_child IN value.cpe_name |
+    FOREACH (childValue IN value.cpe_name |
       MERGE (child:CPE {
-        uri: value_child.cpe23Uri
+        uri: childValue.cpe23Uri
       })
-      MERGE (cpe)-[:parentOf]->(child)
+      MERGE (cpe)-[:IS_PARENT_OF]->(child)
     )
   ',
   {batchSize:1000, params: {files:files}}

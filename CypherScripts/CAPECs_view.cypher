@@ -5,37 +5,39 @@ UNWIND [capecViewFilesToImport] AS files
 CALL apoc.periodic.iterate(
   'CALL apoc.load.json($files) YIELD value AS view RETURN view',
   '
-    MERGE (v:CAPEC_VIEW {ViewID: view.ID})
-      SET v.Name = view.Name, v.Type = view.Type, v.Status = view.Status,
-      v.Objective = apoc.convert.toString(view.Objective), v.Filter = view.Filter,
-      v.Notes = apoc.convert.toString(view.Notes),
-      v.Submission_Name = view.Content_History.Submission.Submission_Name,
-      v.Submission_Date = view.Content_History.Submission.Submission_Date,
-      v.Submission_Organization = view.Content_History.Submission.Submission_Organization,
-      v.Modification = [value IN view.Content_History.Modification | apoc.convert.toString(value)]
+    MERGE (capecView:CAPECVIEW {id: : toInteger(view.ID)})
+      SET capecView.name = view.Name,
+      capecView.type = view.Type,
+      capecView.status = view.Status,
+      capecView.objective = apoc.convert.toString(view.Objective),
+      capecView.filter = view.Filter,
+      capecView.notes = apoc.convert.toString(view.Notes),
+      capecView.submissionName = view.Content_History.Submission.Submission_Name,
+      capecView.submissionDate = datetime(view.Content_History.Submission.Submission_Date),
+      capecView.submissionOrganization = view.Content_History.Submission.Submission_Organization,
+      capecView.modification = [value IN view.Content_History.Modification | apoc.convert.toString(value)]
 
       // Insert Stakeholders for each View
       FOREACH (value IN view.Audience.Stakeholder |
-        MERGE (st:Stakeholder {Type: value.Type})
-        MERGE (v)-[rel:usefulFor]->(st)
-        SET rel.Description = value.Description
+        MERGE (stackholder:Stakeholder {type: value.Type})
+          ON CREATE SET stackholder.description = value.Description
+        MERGE (capecView)-[rel:USEFUL_FOR]->(stackholder)
       )
 
       // Insert Members for each View
-      WITH v, view
+      WITH capecView, view
       FOREACH (members IN view.Members.Has_Member |
-        MERGE (MemberAP:CAPEC {Name: "CAPEC-" + members.CAPEC_ID})
-        MERGE (v)-[:hasMember]->(MemberAP)
+        MERGE (MemberAP:CAPEC {id: toInteger(members.CAPEC_ID)})
+        MERGE (capecView)-[:HAS_MEMBER]->(MemberAP)
       )
 
 
       // ------------------------------------------------------------------------
       // Insert Public References for each View
-      WITH v, view
+      WITH capecView, view
       FOREACH (viewExReference IN view.References.Reference |
-        MERGE (v:CAPEC_VIEW {ViewID: view.ID})
-        MERGE (viewRef:External_Reference_CAPEC {Reference_ID: viewExReference.External_Reference_ID})
-        MERGE (v)-[:hasExternal_Reference]->(viewRef)
+        MERGE (viewRef:CAPECReference {id: viewExReference.External_Reference_ID})
+        MERGE (capecView)-[:HAS_EXTERNAL_REFERENCE]->(viewRef)
       )
   ',
   {batchSize:200, params: {files:files}}

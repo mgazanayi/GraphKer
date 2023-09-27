@@ -5,11 +5,13 @@ CALL apoc.periodic.iterate(
   'CALL apoc.load.json($files) YIELD value AS reference RETURN reference',
   '
     // Insert External References for CWEs
-    MERGE (r:External_Reference_CWE {Reference_ID: reference.Reference_ID})
-      ON CREATE SET r.Author = [value IN reference.Author | value],
-      r.Title = reference.Title,
-      r.Edition = reference.Edition, r.URL = reference.URL,
-      r.Publication_Year = reference.Publication_Year, r.Publisher = reference.Publisher
+    MERGE (cweReference:CWEReference {id: reference.Reference_ID})
+      ON CREATE SET cweReference.author = [value IN reference.Author | value],
+      cweReference.title = reference.Title,
+      cweReference.edition = reference.Edition,
+      cweReference.url = reference.URL,
+      cweReference.publicationYear = reference.Publication_Year,
+      cweReference.publisher = reference.Publisher
   ',
   {batchSize:200, params: {files:files}}
 ) YIELD batches,total,timeTaken,committedOperations,failedOperations,failedBatches,retries,errorMessages,batch,operations,wasTerminated,failedParams,updateStatistics

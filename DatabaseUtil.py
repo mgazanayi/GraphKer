@@ -11,7 +11,7 @@ class DatabaseUtil:
         # Clear Database from existing nodes and relationships
         start_time = time.time()
         print(f"\Start cleaning Data from from existing nodes and relationships")
-        labels = ["CPE", "CVE", "CVSS_2", "CVSS_3", "Reference_Data", "CWE", "Detection_Method", "Demonstrative_Example", "External_Reference_CWE", "CWE_VIEW", "Stakeholder", "Applicable_Platform", "Mitigation", "Consequence", "CAPEC", "External_Reference_ID", "CAPEC_VIEW"]
+        labels = ["CPE", "CVE", "CVSS_2", "CVSS_3", "CVEReference", "CWE", "DetectionMethod", "DemonstrativeExample", "CWEReference", "CWEView", "Stakeholder", "ApplicablePlatform", "Mitigation", "Consequence", "CAPEC", "CAPECReference", "CAPECVIEW"]
         for label in labels:
             print(f"Deleting {label}")
             query = "CALL apoc.periodic.iterate('MATCH (n:" + label + ") RETURN n', 'DETACH DELETE n', {batchSize:2000})"
