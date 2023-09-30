@@ -12,7 +12,7 @@ CREATE CONSTRAINT cvss2 if NOT exists ON (cvss2:CVSS_2) ASSERT cvss2.id IS UNIQU
 
 CREATE CONSTRAINT externalReferencecwe if NOT exists ON (ref:CWEReference) ASSERT ref.id IS UNIQUE;
 
-CREATE CONSTRAINT Consequence if NOT exists ON (con:Consequence) ASSERT con.Scope IS UNIQUE;
+CREATE CONSTRAINT Consequence if NOT exists ON (con:Consequence) ASSERT con.scope IS UNIQUE;
 
 CREATE CONSTRAINT Mitigation if NOT exists ON (mit:Mitigation) ASSERT mit.description IS UNIQUE;
 
@@ -20,7 +20,7 @@ CREATE CONSTRAINT DetectionMethod if NOT exists ON (dec:DetectionMethod) ASSERT 
 
 CREATE CONSTRAINT demonstrativeExample if NOT exists ON (de:DemonstrativeExample) ASSERT de.introText IS UNIQUE;
 
-CREATE CONSTRAINT capec if NOT exists ON (cp:CAPEC) ASSERT cp.Name IS UNIQUE;
+CREATE CONSTRAINT capec if NOT exists ON (cp:CAPEC) ASSERT cp.id IS UNIQUE;
 
 CREATE CONSTRAINT cweview if NOT exists ON (v:CWEView) ASSERT v.id IS UNIQUE;
 
