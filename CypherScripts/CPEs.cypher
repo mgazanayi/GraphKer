@@ -5,7 +5,7 @@ CALL apoc.periodic.iterate(
   '
     WITH value
     MERGE (cpe:CPE {
-      id: value.cpe23Uri
+      uri: value.cpe23Uri
     })
 
     FOREACH (childValue IN value.cpe_name |
