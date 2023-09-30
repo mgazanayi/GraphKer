@@ -5,7 +5,7 @@ UNWIND [capecViewFilesToImport] AS files
 CALL apoc.periodic.iterate(
   'CALL apoc.load.json($files) YIELD value AS view RETURN view',
   '
-    MERGE (capecView:CAPECVIEW {id: : toInteger(view.ID)})
+    MERGE (capecView:CAPECVIEW {id: toInteger(view.ID)})
       SET capecView.name = view.Name,
       capecView.type = view.Type,
       capecView.status = view.Status,
