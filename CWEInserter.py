@@ -4,9 +4,10 @@ from neo4j import exceptions
 
 class CWEInserter:
 
-    def __init__(self, driver, import_path):
+    def __init__(self, driver, import_path, database):
         self.driver = driver
         self.import_path = import_path
+        self.database = database
 
     # Cypher Query to insert CWE reference Cypher Script
     def query_cwe_reference_script(self, file):
@@ -15,7 +16,7 @@ class CWEInserter:
         query = query.replace('cweReferenceFilesToImport', f"'{file}'")
 
         try:
-            with self.driver.session() as session:
+            with self.driver.session(database=self.database) as session:
                 session.run(query)
         except exceptions.Neo4jError as e:
             print(f"Neo4jError: {e}")
@@ -34,7 +35,7 @@ class CWEInserter:
         query = query.replace('cweWeaknessFilesToImport', f"'{file}'")
 
         try:
-            with self.driver.session() as session:
+            with self.driver.session(database=self.database) as session:
                 session.run(query)
         except exceptions.Neo4jError as e:
             print(f"Neo4jError: {e}")
@@ -53,7 +54,7 @@ class CWEInserter:
         query = query.replace('cweCategoryFilesToImport', f"'{file}'")
 
         try:
-            with self.driver.session() as session:
+            with self.driver.session(database=self.database) as session:
                 session.run(query)
         except exceptions.Neo4jError as e:
             print(f"Neo4jError: {e}")
@@ -72,7 +73,7 @@ class CWEInserter:
         query = query.replace('cweViewFilesToImport', f"'{file}'")
 
         try:
-            with self.driver.session() as session:
+            with self.driver.session(database=self.database) as session:
                 session.run(query)
         except exceptions.Neo4jError as e:
             print(f"Neo4jError: {e}")

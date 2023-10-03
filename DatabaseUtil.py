@@ -3,8 +3,9 @@ from neo4j import exceptions
 
 class DatabaseUtil:
 
-    def __init__(self, driver):
+    def __init__(self, driver, database):
         self.driver = driver
+        self.database = database
 
     # Clear Database
     def clear(self):
@@ -16,7 +17,7 @@ class DatabaseUtil:
             print(f"Deleting {label}")
             query = "CALL apoc.periodic.iterate('MATCH (n:" + label + ") RETURN n', 'DETACH DELETE n', {batchSize:2000})"
             try:
-                with self.driver.session() as session:
+                with self.driver.session(database=self.database) as session:
                     session.run(query)
             except exceptions.Neo4jError as e:
                 print(f"Neo4jError: {e}")
@@ -36,7 +37,7 @@ class DatabaseUtil:
         start_time = time.time()
         query = """CALL apoc.cypher.runSchemaFile("ClearConstraintsIndexes.cypher")"""
         try:
-            with self.driver.session() as session:
+            with self.driver.session(database=self.database) as session:
                 session.run(query)
         except exceptions.Neo4jError as e:
             print(f"Neo4jError: {e}")
@@ -50,7 +51,7 @@ class DatabaseUtil:
         start_time = time.time()
         query = """CALL apoc.cypher.runSchemaFile("ConstraintsIndexes.cypher")"""
         try:
-            with self.driver.session() as session:
+            with self.driver.session(database=self.database) as session:
                 session.run(query)
         except exceptions.Neo4jError as e:
             print(f"Neo4jError: {e}")

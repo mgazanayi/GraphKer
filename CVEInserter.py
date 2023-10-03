@@ -5,9 +5,10 @@ from neo4j import exceptions
 
 class CVEInserter:
 
-    def __init__(self, driver, import_path):
+    def __init__(self, driver, import_path, database):
         self.driver = driver
         self.import_path = import_path
+        self.database = database
 
     # Configure CVE Files and CVE Cypher Script for insertion
     def cve_insertion(self):
@@ -25,7 +26,7 @@ class CVEInserter:
         query = query.replace('cveFilesToImport', f"'{file}'")
 
         try:
-            with self.driver.session() as session:
+            with self.driver.session(database=self.database) as session:
                 session.run(query)
         except exceptions.Neo4jError as e:
             print(f"Neo4jError: {e}")
