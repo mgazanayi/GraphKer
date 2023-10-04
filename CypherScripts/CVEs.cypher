@@ -13,13 +13,11 @@ CALL apoc.periodic.iterate(
 
         // In which CPE is applicable
           FOREACH (node IN item.configurations.nodes |
-            FOREACH (child IN node.children |
-              FOREACH (cpe_value IN child.cpe_match |
-                MERGE (cpe:CPE {
-                  uri: cpe_value.cpe23Uri
-                })
-                MERGE (cve)-[:IS_APPLICABLE_IN {isVulnerable: cpe_value.vulnerable}]->(cpe)
-              )
+            FOREACH (cpe_value IN node.cpe_match |
+              MERGE (cpe:CPE {
+                uri: cpe_value.cpe23Uri
+              })
+              MERGE (cve)-[:IS_APPLICABLE_IN {isVulnerable: cpe_value.vulnerable}]->(cpe)
             )
           )
 
