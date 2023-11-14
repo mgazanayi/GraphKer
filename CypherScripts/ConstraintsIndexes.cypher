@@ -6,10 +6,6 @@ CREATE CONSTRAINT cwe if NOT exists ON (cwe:CWE) ASSERT cwe.id IS UNIQUE;
 
 CREATE CONSTRAINT reference if NOT exists ON (ref:CVEReference) ASSERT ref.url IS UNIQUE;
 
-CREATE CONSTRAINT cvss3 if NOT exists ON (cvss3:CVSS_3) ASSERT cvss3.id IS UNIQUE;
-
-CREATE CONSTRAINT cvss2 if NOT exists ON (cvss2:CVSS_2) ASSERT cvss2.id IS UNIQUE;
-
 CREATE CONSTRAINT externalReferencecwe if NOT exists ON (ref:CWEReference) ASSERT ref.id IS UNIQUE;
 
 CREATE CONSTRAINT Consequence if NOT exists ON (con:Consequence) ASSERT con.scope IS UNIQUE;
