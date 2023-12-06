@@ -31,8 +31,10 @@ CALL apoc.periodic.iterate(
           )
 
         // CVSS3
-          CREATE (cvss3:CVSS_3)
-            SET cvss3.version = item.impact.baseMetricV3.cvssV3.version,
+          MERGE (cvss3:CVSS_3 {
+            id: apoc.util.sha512([item.impact.baseMetricV3.cvssV3.version, item.impact.baseMetricV3.cvssV3.vectorString, item.impact.baseMetricV3.cvssV3.attackVector, item.impact.baseMetricV3.cvssV3.attackComplexity, item.impact.baseMetricV3.cvssV3.privilegesRequired, item.impact.baseMetricV3.cvssV3.userInteraction, item.impact.baseMetricV3.cvssV3.scope, item.impact.baseMetricV3.cvssV3.confidentialityImpact, item.impact.baseMetricV3.cvssV3.integrityImpact, item.impact.baseMetricV3.cvssV3.availabilityImpact, item.impact.baseMetricV3.cvssV3.baseScore, item.impact.baseMetricV3.cvssV3.baseSeverity, item.cve.impact.baseMetricV3.exploitabilityScore, item.cve.impact.baseMetricV3.impactScore])
+          })
+            ON CREATE SET cvss3.version = item.impact.baseMetricV3.cvssV3.version,
 
             cvss3.vectorString = item.impact.baseMetricV3.cvssV3.vectorString,
             cvss3.attackVectorScore=
@@ -122,35 +124,37 @@ CALL apoc.periodic.iterate(
 
             cvss3.impactScore = item.cve.impact.baseMetricV3.impactScore
 
-          CREATE (attackComplexityCVSS3:CVSS3Topic {topic: "attackComplexity"})
-          CREATE (cvss3)-[:SCORED {current:cvss3.attackComplexityScore , target: 1}]->(attackComplexityCVSS3)
+          MERGE (attackComplexityCVSS3:CVSS3Topic {id: cvss3.id, topic: "attackComplexity"})
+          MERGE (cvss3)-[:SCORED {current:cvss3.attackComplexityScore , target: 1}]->(attackComplexityCVSS3)
 
-          CREATE (attackVectorCVSS3:CVSS3Topic {topic: "attackVector"})
-          CREATE (cvss3)-[:SCORED {current:cvss3.attackVectorScore, target: 1}]->(attackVectorCVSS3)
+          MERGE (attackVectorCVSS3:CVSS3Topic {id: cvss3.id, topic: "attackVector"})
+          MERGE (cvss3)-[:SCORED {current:cvss3.attackVectorScore, target: 1}]->(attackVectorCVSS3)
 
-          CREATE (availabilityImpactCVSS3:CVSS3Topic {topic: "availabilityImpact"})
-          CREATE (cvss3)-[:SCORED {current:cvss3.availabilityImpactScore , target: 0}]->(availabilityImpactCVSS3)
+          MERGE (availabilityImpactCVSS3:CVSS3Topic {id: cvss3.id, topic: "availabilityImpact"})
+          MERGE (cvss3)-[:SCORED {current:cvss3.availabilityImpactScore , target: 0}]->(availabilityImpactCVSS3)
 
-          CREATE (baseSeverityCVSS3:CVSS3Topic {topic: "baseSeverity"})
-          CREATE (cvss3)-[:SCORED {current:cvss3.baseSeverityScore , target: 1}]->(baseSeverityCVSS3)
+          MERGE (baseSeverityCVSS3:CVSS3Topic {id: cvss3.id, topic: "baseSeverity"})
+          MERGE (cvss3)-[:SCORED {current:cvss3.baseSeverityScore , target: 1}]->(baseSeverityCVSS3)
 
-          CREATE (scopeCVSS3:CVSS3Topic {topic: "scope"})
-          CREATE (cvss3)-[:SCORED {current:cvss3.scopeScore , target: 0}]->(scopeCVSS3)
+          MERGE (scopeCVSS3:CVSS3Topic {id: cvss3.id, topic: "scope"})
+          MERGE (cvss3)-[:SCORED {current:cvss3.scopeScore , target: 0}]->(scopeCVSS3)
 
-          CREATE (integrityImpactCVSS3:CVSS3Topic {topic: "integrityImpact"})
-          CREATE (cvss3)-[:SCORED {current:cvss3.integrityImpactScore , target: 0}]->(integrityImpactCVSS3)
+          MERGE (integrityImpactCVSS3:CVSS3Topic {id: cvss3.id, topic: "integrityImpact"})
+          MERGE (cvss3)-[:SCORED {current:cvss3.integrityImpactScore , target: 0}]->(integrityImpactCVSS3)
 
-          CREATE (privilegesRequiredCVSS3:CVSS3Topic {topic: "privilegesRequired"})
-          CREATE (cvss3)-[:SCORED {current:cvss3.privilegesRequiredScore , target: 0}]->(privilegesRequiredCVSS3)
+          MERGE (privilegesRequiredCVSS3:CVSS3Topic {id: cvss3.id, topic: "privilegesRequired"})
+          MERGE (cvss3)-[:SCORED {current:cvss3.privilegesRequiredScore , target: 0}]->(privilegesRequiredCVSS3)
 
-          CREATE (userInteractionCVSS3:CVSS3Topic {topic: "userInteraction"})
-          CREATE (cvss3)-[:SCORED {current:cvss3.userInteractionScore , target: 0}]->(userInteractionCVSS3)
+          MERGE (userInteractionCVSS3:CVSS3Topic {id: cvss3.id, topic: "userInteraction"})
+          MERGE (cvss3)-[:SCORED {current:cvss3.userInteractionScore , target: 0}]->(userInteractionCVSS3)
 
-          CREATE (cve)-[:HAS_CVSS3_SCORE]->(cvss3)
+          MERGE (cve)-[:HAS_CVSS3_SCORE]->(cvss3)
 
           // CVSS2
-          CREATE (cvss2:CVSS_2)
-            SET cvss2.Version = item.impact.baseMetricV2.cvssV2.version,
+          MERGE (cvss2:CVSS_2 {
+            id: apoc.util.sha512([item.impact.baseMetricV2.cvssV2.version, item.impact.baseMetricV2.cvssV2.vectorString, item.impact.baseMetricV2.cvssV2.accessVector, item.impact.baseMetricV2.cvssV2.accessComplexity, item.impact.baseMetricV2.cvssV2.authentication, item.impact.baseMetricV2.cvssV2.confidentialityImpact, item.impact.baseMetricV2.cvssV2.integrityImpact, item.impact.baseMetricV2.cvssV2.availabilityImpact, item.impact.baseMetricV2.cvssV2.baseScore, item.cve.impact.baseMetricV2.exploitabilityScore, item.cve.impact.baseMetricV2.severity, item.cve.impact.baseMetricV2.impactScore, item.cve.impact.baseMetricV2.acInsufInfo, item.cve.impact.baseMetricV2.obtainAllPrivileges, item.cve.impact.baseMetricV2.obtainUserPrivileges, item.cve.impact.baseMetricV2.obtainOtherPrivileges, item.cve.impact.baseMetricV2.userInteractionRequired])
+          })
+            ON CREATE SET cvss2.Version = item.impact.baseMetricV2.cvssV2.version,
             cvss2.vectorString = item.impact.baseMetricV2.cvssV2.vectorString,
 
             cvss2.accessVector = item.impact.baseMetricV2.cvssV2.accessVector,
@@ -218,25 +222,25 @@ CALL apoc.periodic.iterate(
             cvss2.obtainOtherPrivileges = item.cve.impact.baseMetricV2.obtainOtherPrivileges,
             cvss2.userInteractionRequired = item.cve.impact.baseMetricV2.userInteractionRequired
 
-          CREATE (accessVectorCVSS2:CVSS2Topic {topic: "accessVector"})
-          CREATE (cvss2)-[:SCORED {current:cvss2.accessVectorScore , target: 1}]->(accessVectorCVSS2)
+          MERGE (accessVectorCVSS2:CVSS2Topic {id: cvss2.id, topic: "accessVector"})
+          MERGE (cvss2)-[:SCORED {current:cvss2.accessVectorScore , target: 1}]->(accessVectorCVSS2)
 
-          CREATE (accessComplexityCVSS2:CVSS2Topic {topic: "accessComplexity"})
-          CREATE (cvss2)-[:SCORED {current:cvss2.accessComplexityScore , target: 1}]->(accessComplexityCVSS2)
+          MERGE (accessComplexityCVSS2:CVSS2Topic {id: cvss2.id, topic: "accessComplexity"})
+          MERGE (cvss2)-[:SCORED {current:cvss2.accessComplexityScore , target: 1}]->(accessComplexityCVSS2)
 
-          CREATE (authenticationCVSS2:CVSS2Topic {topic: "authentication"})
-          CREATE (cvss2)-[:SCORED {current:cvss2.authenticationScore , target: 1}]->(authenticationCVSS2)
+          MERGE (authenticationCVSS2:CVSS2Topic {id: cvss2.id, topic: "authentication"})
+          MERGE (cvss2)-[:SCORED {current:cvss2.authenticationScore , target: 1}]->(authenticationCVSS2)
 
-          CREATE (confidentialityImpactCVSS2:CVSS2Topic {topic: "confidentialityImpact"})
-          CREATE (cvss2)-[:SCORED {current:cvss2.confidentialityImpactScore , target: 0}]->(confidentialityImpactCVSS2)
+          MERGE (confidentialityImpactCVSS2:CVSS2Topic {id: cvss2.id, topic: "confidentialityImpact"})
+          MERGE (cvss2)-[:SCORED {current:cvss2.confidentialityImpactScore , target: 0}]->(confidentialityImpactCVSS2)
 
-          CREATE (integrityImpactCVSS2:CVSS2Topic {topic: "integrityImpact"})
-          CREATE (cvss2)-[:SCORED {current:cvss2.integrityImpactScore , target: 0}]->(integrityImpactCVSS2)
+          MERGE (integrityImpactCVSS2:CVSS2Topic {id: cvss2.id, topic: "integrityImpact"})
+          MERGE (cvss2)-[:SCORED {current:cvss2.integrityImpactScore , target: 0}]->(integrityImpactCVSS2)
 
-          CREATE (availabilityImpactCVSS2:CVSS2Topic {topic: "availabilityImpact"})
-          CREATE (cvss2)-[:SCORED {current:cvss2.availabilityImpactScore , target: 0}]->(availabilityImpactCVSS2)
+          MERGE (availabilityImpactCVSS2:CVSS2Topic {id: cvss2.id, topic: "availabilityImpact"})
+          MERGE (cvss2)-[:SCORED {current:cvss2.availabilityImpactScore , target: 0}]->(availabilityImpactCVSS2)
 
-          CREATE (cve)-[:HAS_CVSS2_SCORE]->(cvss2)
+          MERGE (cve)-[:HAS_CVSS2_SCORE]->(cvss2)
 
         // Public References
           FOREACH (reference_data IN item.cve.references.reference_data |
