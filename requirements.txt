@@ -4,3 +4,4 @@ requests~=2.26.0
 beautifulsoup4~=4.9.3
 click~=8.1.7
 circuitbreaker~=2.0.0
+chardet~=5.2.0
