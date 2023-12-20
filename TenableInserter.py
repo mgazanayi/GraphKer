@@ -26,7 +26,7 @@ class TenableInserter:
         try:
             with self.driver.session(database=self.database) as session:
                 with open(self.import_path + file, "r") as plugin_output_file:
-                    csv_reader = pd.read_csv(plugin_output_file, chunksize=100, delimiter='\t')
+                    csv_reader = pd.read_csv(plugin_output_file, chunksize=100, delimiter='\t',  engine='python')
                     for chunk in csv_reader:
                         # Process each chunk (chunk is a DataFrame)
                         for index, row in chunk.iterrows():
