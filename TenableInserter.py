@@ -26,11 +26,8 @@ class TenableInserter:
         start_time = time.time()
         try:
             with self.driver.session(database=self.database) as session:
-                with open(self.import_path + file, "r") as plugin_output_file:
-                    result = chardet.detect(plugin_output_file.read())
-                    print(f"{plugin_output_file} Encoding is: {result['encoding']}")
-
-                    csv_reader = pd.read_csv(plugin_output_file, chunksize=100, delimiter='\t', encoding=result['encoding'], engine='python')
+                with open(self.import_path + file, "r", encoding='latin-1') as plugin_output_file:
+                    csv_reader = pd.read_csv(plugin_output_file, chunksize=100, delimiter='\t', encoding='latin-1', engine='python')
                     for chunk in csv_reader:
                         # Process each chunk (chunk is a DataFrame)
                         for index, row in chunk.iterrows():
