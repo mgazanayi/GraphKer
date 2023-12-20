@@ -28,7 +28,7 @@ class TenableInserter:
             with self.driver.session(database=self.database) as session:
                 with open(plugin_output_file, 'rb') as f:
                     result = chardet.detect(f.read())
-                    print(f"{plugin_output_file} Encoding is: {result['encoding']}")
+                    print(f"{f} Encoding is: {result['encoding']}")
 
                 with open(self.import_path + file, "r") as plugin_output_file:
                     csv_reader = pd.read_csv(plugin_output_file, chunksize=100, delimiter='\t', encoding=result['encoding'], engine='python')

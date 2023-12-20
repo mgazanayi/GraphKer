@@ -1,0 +1,547 @@
+{
+  "title": "VIGIE",
+  "version": "2.3",
+  "settings": {
+    "pagenumber": 0,
+    "editable": true,
+    "fullscreenEnabled": false,
+    "parameters": {
+      "neodash_cve_id": "CVE-2020-1472",
+      "neodash_cve_id_display": "CVE-2021-44228",
+      "undefined": "",
+      "undefined_display": "",
+      "neodash_ies_environment": "PROD",
+      "neodash_ies_environment_display": "PROD",
+      "neodash_server_hostname": "PC2FY507",
+      "neodash_ins_ins": "LAK",
+      "neodash_ins_ins_display": ""
+    },
+    "theme": "light"
+  },
+  "pages": [
+    {
+      "title": "Analyse par CVE",
+      "reports": [
+        {
+          "id": "d7e2d6ae-2023-4eaf-a766-885030db049a",
+          "title": "Liste des CVE par criticité",
+          "query": "MATCH (cvss3:CVSS_3)<-[:HAS_CVSS3_SCORE]-(cve:CVE)-[:HAS_CVSS2_SCORE]->(cvss2:CVSS_2), (cve)<-[:IS_AFFECTED_BY]-(server:Server) \nWHERE cvss3.baseScore IS NOT NULL AND cvss2.baseScore IS NOT NULL\nRETURN DISTINCT cve.id AS CVE, cve.lastModifiedDate AS `Date de modification`, cvss3.baseScore AS `CVSS3 Score`, cvss2.baseScore AS `CVSS2 Score`\nORDER BY cvss3.baseScore DESC, cvss2.baseScore DESC, cve.lastModifiedDate DESC",
+          "width": 9,
+          "height": 3,
+          "x": 3,
+          "y": 0,
+          "type": "table",
+          "selection": {},
+          "settings": {
+            "allowDownload": true,
+            "actionsRules": [
+              {
+                "condition": "Click",
+                "field": "CVE",
+                "value": "CVE",
+                "customization": "set variable",
+                "customizationValue": "cve_id"
+              }
+            ]
+          },
+          "schema": []
+        },
+        {
+          "id": "95b4450d-1cf5-4f50-ad1d-f1b93498deab",
+          "title": "Applications affectées par le CVE",
+          "query": "CALL apoc.when($neodash_ies_environment='TOUS', 'MATCH (ies:Ies) RETURN collect(DISTINCT ies.environment) AS envs', 'RETURN [$neodash_ies_environment] AS envs', {neodash_ies_environment:$neodash_ies_environment}) YIELD value\nMATCH (cve:CVE)<-[r1:IS_AFFECTED_BY]-(server:Server)<-[r2:USES_SERVER]-(ies:Ies)-[r3:ENV_OF_INS]->(ins:Ins)\nWHERE cve.id = $neodash_cve_id AND ies.environment IN value.envs\nRETURN cve,r1,server,r2,ies,r3,ins",
+          "width": 9,
+          "height": 3,
+          "x": 3,
+          "y": 6,
+          "type": "graph",
+          "selection": {
+            "CVE": "id",
+            "IS_AFFECTED_BY": "(label)",
+            "Server": "(label)",
+            "USES_SERVER": "(label)",
+            "Ies": "(label)",
+            "ENV_OF_INS": "(label)",
+            "Ins": "name"
+          },
+          "settings": {
+            "actionsRules": [
+              {
+                "condition": "onNodeClick",
+                "field": "Server",
+                "value": "hostname",
+                "customization": "set variable",
+                "customizationValue": "server_hostname"
+              },
+              {
+                "condition": "onNodeClick",
+                "field": "Ins",
+                "value": "ins",
+                "customization": "set variable",
+                "customizationValue": "ins_ins"
+              }
+            ]
+          },
+          "schema": [
+            [
+              "CVE",
+              "lastModifiedDate",
+              "assigner",
+              "description",
+              "publishedDate",
+              "id"
+            ],
+            [
+              "IS_AFFECTED_BY"
+            ],
+            [
+              "Server",
+              "lcomputerid",
+              "lportfolioitemid",
+              "vcpu",
+              "vmtools_status",
+              "type",
+              "hostname",
+              "vigie_created_at",
+              "asset_description",
+              "plateau",
+              "alias",
+              "model",
+              "lparentid",
+              "state",
+              "vhardware",
+              "vm_classe",
+              "vram",
+              "asset_tag",
+              "vmtools_vers",
+              "assignment",
+              "exploitant",
+              "system_name",
+              "serial_number",
+              "vigie_updated_at",
+              "vigie_source",
+              "vmtools",
+              "environment",
+              "folder",
+              "cbt"
+            ],
+            [
+              "USES_SERVER",
+              "vigie_created_at",
+              "vigie_updated_at",
+              "vigie_source"
+            ],
+            [
+              "Ies",
+              "instance",
+              "pdma_re",
+              "slae",
+              "actif",
+              "vigie_updated_at",
+              "guaranteed_opening",
+              "vigie_source",
+              "dima_re",
+              "environment",
+              "ies_id",
+              "vigie_created_at",
+              "opening_hours",
+              "pra",
+              "typoservice"
+            ],
+            [
+              "ENV_OF_INS",
+              "vigie_created_at",
+              "vigie_updated_at",
+              "vigie_source"
+            ],
+            [
+              "Ins",
+              "dict_confidentiality",
+              "workflow",
+              "vigie_updated_at",
+              "type",
+              "vigie_source",
+              "objective",
+              "ins",
+              "dict_integrity",
+              "dict_availability",
+              "is_cap",
+              "vigie_created_at",
+              "is_pca",
+              "name",
+              "state",
+              "dict_traceability"
+            ]
+          ]
+        },
+        {
+          "id": "80a8566c-32a6-4bba-b098-8da03a52b04d",
+          "title": "Analyse d'impact par serveur",
+          "query": "CALL apoc.when($neodash_ies_environment='TOUS', 'MATCH (ies:Ies) RETURN collect(DISTINCT ies.environment) AS envs', 'RETURN [$neodash_ies_environment] AS envs', {neodash_ies_environment:$neodash_ies_environment}) YIELD value\nMATCH (cve:CVE)<-[r1:IS_AFFECTED_BY]-(server:Server)<-[r2:USES_SERVER]-(ies:Ies)-[r3:ENV_OF_INS]->(ins:Ins)\nWHERE cve.id = $neodash_cve_id AND ies.environment IN value.envs\nRETURN cve.id,server.hostname,ies.environment,ins.ins",
+          "width": 12,
+          "height": 2,
+          "x": 0,
+          "y": 9,
+          "type": "table",
+          "selection": {},
+          "settings": {
+            "allowDownload": true
+          },
+          "schema": []
+        },
+        {
+          "id": "502b6e0e-a849-46f8-b31f-395b9d320e50",
+          "title": "Serveurs affectés par la CVE",
+          "query": "CALL apoc.when($neodash_ies_environment='TOUS', 'MATCH (ies:Ies) RETURN collect(DISTINCT ies.environment) AS envs', 'RETURN [$neodash_ies_environment] AS envs', {neodash_ies_environment:$neodash_ies_environment}) YIELD value\nMATCH (cve:CVE)<-[r:IS_AFFECTED_BY]-(server:Server)<-[r2:USES_SERVER]-(ies:Ies)\nWHERE cve.id = $neodash_cve_id AND ies.environment IN value.envs\nRETURN COUNT(server)",
+          "width": 3,
+          "height": 1,
+          "x": 0,
+          "y": 2,
+          "type": "value",
+          "selection": {},
+          "settings": {
+            "styleRules": [
+              {
+                "field": "",
+                "condition": "=",
+                "value": "",
+                "customization": "text color",
+                "customizationValue": "black"
+              }
+            ]
+          },
+          "schema": []
+        },
+        {
+          "id": "4b1bd3dd-6ef3-4092-b1d5-f74ff2fdd5dc",
+          "title": "Environnement à analyser",
+          "query": "MATCH (n:`Ies`) \nWHERE (toString(n.`environment`)) CONTAINS ($input) \nRETURN DISTINCT n.`environment` as value,  n.`environment` as display ORDER BY size(toString(value)) ASC LIMIT 10",
+          "width": 3,
+          "height": 1,
+          "x": 0,
+          "y": 0,
+          "type": "select",
+          "selection": {},
+          "settings": {
+            "type": "Node Property",
+            "entityType": "Ies",
+            "propertyType": "environment",
+            "propertyTypeDisplay": "environment",
+            "parameterName": "neodash_ies_environment",
+            "suggestionLimit": 10,
+            "caseSensitive": true,
+            "defaultValue": "TOUS"
+          },
+          "schema": []
+        },
+        {
+          "id": "6791c816-4b76-4358-8bb7-fe0a1c79e6ba",
+          "title": "Ins affectés par la CVE",
+          "query": "CALL apoc.when($neodash_ies_environment='TOUS', 'MATCH (ies:Ies) RETURN collect(DISTINCT ies.environment) AS envs', 'RETURN [$neodash_ies_environment] AS envs', {neodash_ies_environment:$neodash_ies_environment}) YIELD value\nMATCH (cve:CVE)<-[r:IS_AFFECTED_BY]-(server:Server)<-[r2:USES_SERVER]-(ies:Ies)-[:ENV_OF_INS]->(ins:Ins)\nWHERE cve.id = $neodash_cve_id AND ies.environment IN value.envs\nRETURN COUNT(DISTINCT ins)",
+          "width": 3,
+          "height": 1,
+          "x": 0,
+          "y": 1,
+          "type": "value",
+          "selection": {},
+          "settings": {},
+          "schema": []
+        },
+        {
+          "id": "00d8e239-c2d3-4480-a664-5bdfd487c74c",
+          "title": "Criticité du CVE",
+          "query": "MATCH (cve:CVE)-[:HAS_CVSS3_TOPIC_CONTEXT]->(ctx:CVSS3TopicContext)-[s:SCORED]->(topic:CVSS3Topic)\nWHERE cve.id='CVE-2020-1472'\nRETURN topic.topic AS Topic, AVG(s.current) AS current, AVG(s.target) AS target",
+          "width": 7,
+          "height": 3,
+          "x": 0,
+          "y": 3,
+          "type": "radar",
+          "selection": {
+            "index": "Topic",
+            "values": [
+              "target",
+              "current"
+            ]
+          },
+          "settings": {},
+          "schema": []
+        },
+        {
+          "id": "9e5b71df-d03b-4e2c-9198-13cdb4a9788d",
+          "title": "",
+          "query": "MATCH (server:Server)\nWHERE server.hostname=$neodash_server_hostname\nRETURN server.hostname AS hostname, server.model AS model\n\n\n",
+          "width": 3,
+          "height": 2,
+          "x": 0,
+          "y": 6,
+          "type": "table",
+          "selection": {},
+          "settings": {}
+        }
+      ]
+    },
+    {
+      "title": "Analyse par Ins",
+      "reports": [
+        {
+          "id": "d8e2d6ae-2023-4eaf-a766-885030db049a",
+          "title": "Liste des CVE par criticité",
+          "query": "MATCH (cvss3:CVSS_3)<-[:HAS_CVSS3_SCORE]-(cve:CVE)-[:HAS_CVSS2_SCORE]->(cvss2:CVSS_2), (cve)<-[:IS_AFFECTED_BY]-(server:Server) \nWHERE cvss3.baseScore IS NOT NULL AND cvss2.baseScore IS NOT NULL\nRETURN DISTINCT cve.id AS CVE, cve.lastModifiedDate AS `Date de modification`, cvss3.baseScore AS `CVSS3 Score`, cvss2.baseScore AS `CVSS2 Score`\nORDER BY cvss3.baseScore DESC, cvss2.baseScore DESC, cve.lastModifiedDate DESC",
+          "width": 6,
+          "height": 2,
+          "x": 0,
+          "y": 1,
+          "type": "table",
+          "selection": {},
+          "settings": {
+            "allowDownload": true,
+            "actionsRules": [
+              {
+                "condition": "Click",
+                "field": "CVE",
+                "value": "CVE",
+                "customization": "set variable",
+                "customizationValue": "cve_id"
+              }
+            ]
+          },
+          "schema": []
+        },
+        {
+          "id": "75b4450d-1cf5-4f50-ad1d-f1b93498deab",
+          "title": "Applications affectées par le CVE",
+          "query": "CALL apoc.when($neodash_ies_environment='TOUS', 'MATCH (ies:Ies) RETURN collect(DISTINCT ies.environment) AS envs', 'RETURN [$neodash_ies_environment] AS envs', {neodash_ies_environment:$neodash_ies_environment}) YIELD value\nMATCH (cve:CVE)<-[r1:IS_AFFECTED_BY]-(server:Server)<-[r2:USES_SERVER]-(ies:Ies)-[r3:ENV_OF_INS]->(ins:Ins)\nWHERE cve.id = $neodash_cve_id AND ies.environment IN value.envs\nRETURN cve,r1,server,r2,ies,r3,ins",
+          "width": 6,
+          "height": 3,
+          "x": 6,
+          "y": 1,
+          "type": "graph",
+          "selection": {
+            "CVE": "id",
+            "IS_AFFECTED_BY": "(label)",
+            "Server": "(label)",
+            "USES_SERVER": "(label)",
+            "Ies": "(label)",
+            "ENV_OF_INS": "(label)",
+            "Ins": "name"
+          },
+          "settings": {
+            "actionsRules": [
+              {
+                "condition": "onNodeClick",
+                "field": "Server",
+                "value": "hostname",
+                "customization": "set variable",
+                "customizationValue": "server_hostname"
+              },
+              {
+                "condition": "onNodeClick",
+                "field": "Ins",
+                "value": "ins",
+                "customization": "set variable",
+                "customizationValue": "ins_ins"
+              }
+            ]
+          },
+          "schema": [
+            [
+              "CVE",
+              "lastModifiedDate",
+              "assigner",
+              "description",
+              "publishedDate",
+              "id"
+            ],
+            [
+              "IS_AFFECTED_BY"
+            ],
+            [
+              "Server",
+              "lcomputerid",
+              "lportfolioitemid",
+              "vcpu",
+              "vmtools_status",
+              "type",
+              "hostname",
+              "vigie_created_at",
+              "asset_description",
+              "plateau",
+              "alias",
+              "model",
+              "lparentid",
+              "state",
+              "vhardware",
+              "vram",
+              "vm_classe",
+              "asset_tag",
+              "vmtools_vers",
+              "assignment",
+              "exploitant",
+              "system_name",
+              "serial_number",
+              "vigie_updated_at",
+              "vigie_source",
+              "vmtools",
+              "environment",
+              "folder",
+              "cbt"
+            ],
+            [
+              "USES_SERVER",
+              "vigie_created_at",
+              "vigie_updated_at",
+              "vigie_source"
+            ],
+            [
+              "Ies",
+              "instance",
+              "pdma_re",
+              "slae",
+              "actif",
+              "vigie_updated_at",
+              "guaranteed_opening",
+              "vigie_source",
+              "dima_re",
+              "environment",
+              "ies_id",
+              "vigie_created_at",
+              "opening_hours",
+              "pra",
+              "typoservice"
+            ],
+            [
+              "ENV_OF_INS",
+              "vigie_created_at",
+              "vigie_updated_at",
+              "vigie_source"
+            ],
+            [
+              "Ins",
+              "dict_confidentiality",
+              "workflow",
+              "vigie_updated_at",
+              "type",
+              "vigie_source",
+              "objective",
+              "ins",
+              "dict_integrity",
+              "dict_availability",
+              "is_cap",
+              "vigie_created_at",
+              "is_pca",
+              "name",
+              "state",
+              "dict_traceability"
+            ]
+          ]
+        },
+        {
+          "id": "80a8566c-32a6-4bba-b098-8da03a52b04d",
+          "title": "Analyse d'impact par serveur",
+          "query": "MATCH (server:Server) WHERE server.hostname = $neodash_server_hostname\nWITH server\n  OPTIONAL MATCH (ies:Ies)-[:USES_SERVER]->(server)\n  OPTIONAL MATCH (server)-[:HAS_INTERFACE]->(:ServerInterface)-[:HAS_IP_ADDRESS]->(ip:IpAddress)\n  OPTIONAL MATCH (ies:Ies)-[:ENV_OF_INS]->(ins:Ins)\n  OPTIONAL MATCH (ies)<-[:EXPLOITS_IES]-(e:Entity)\n  OPTIONAL MATCH (ies)-[:HAS_PERIMETER_1|:HAS_PERIMETER_2]-(p:Perimeter)\n  OPTIONAL MATCH (ins)-[:ATTACHED_TO_SCHAIN]->(sc:ServiceChain)\n  OPTIONAL MATCH (ins)<-[:SPONSORS]-(payer:Moa)\n  OPTIONAL MATCH (ins)<-[:IS_POX]-(pox:Person)\n  OPTIONAL MATCH (ins)<-[:IS_PP]-(pp:Person)\n  OPTIONAL MATCH (sc)<-[:IS_RCS]-(rcs:Person)\nRETURN DISTINCT\n  server.system_name AS Serveur,\n  ins.name AS Application,\n  ins.ins AS INS,\n  ies.environment AS Environnement,\n  e.entity AS Plateau,\n  p.perimeter AS Infogérant,\n  payer.direction AS Commanditaire,\n  pox.firstname + \" \" + pox.lastname AS POX,\n  pp.firstname + \" \" + pp.lastname AS PP,\n  sc.name AS `Chaine de service`,\n  rcs.firstname + \" \" + rcs.lastname AS RCSx,\n  ip.ip_address AS IP,\n  'Référentiel' AS Relation,\n  'Interne service' AS Commentaire\nUNION\n  MATCH (source:Server)-[:HAS_INTERFACE]->(:ServerInterface)-[:HAS_IP_ADDRESS]->(ip:IpAddress)\n    WHERE source.hostname= $neodash_server_hostname\n  MATCH (ip)-[:PACKETBEAT_LINK]-(to:IpAddress)\n  MATCH (server:Server)-[:HAS_INTERFACE]->(:ServerInterface)-[:HAS_IP_ADDRESS]->(to)\n  WITH to, server\n    OPTIONAL MATCH (ies:Ies)-[:USES_SERVER]->(server)\n    OPTIONAL MATCH (ies)-[:ENV_OF_INS]->(ins:Ins)\n    OPTIONAL MATCH (ies)<-[:EXPLOITS_IES]-(e:Entity)\n    OPTIONAL MATCH (ies)-[:HAS_PERIMETER_1|:HAS_PERIMETER_2]-(p:Perimeter)\n    OPTIONAL MATCH (ins)-[:ATTACHED_TO_SCHAIN]->(sc:ServiceChain)\n    OPTIONAL MATCH (ins)<-[:SPONSORS]-(payer:Moa)\n    OPTIONAL MATCH (ins)<-[:IS_POX]-(pox:Person)\n    OPTIONAL MATCH (ins)<-[:IS_PP]-(pp:Person)\n    OPTIONAL MATCH (sc)<-[:IS_RCS]-(rcs:Person)\n  RETURN DISTINCT\n    server.system_name AS Serveur,\n    ins.name AS Application,\n    ins.ins AS INS,\n    ies.environment AS Environnement,\n    e.entity AS Plateau,\n    p.perimeter AS Infogérant,\n    payer.direction AS Commanditaire,\n    pox.firstname + \" \" + pox.lastname AS POX,\n    pp.firstname + \" \" + pp.lastname AS PP,\n    sc.name AS `Chaine de service`,\n    rcs.firstname + \" \" + rcs.lastname AS RCSx,\n    to.ip_address AS IP,\n    'Terrain' AS Relation,\n    'Echange réseau détécté (PML)' AS Commentaire",
+          "width": 12,
+          "height": 2,
+          "x": 0,
+          "y": 4,
+          "type": "table",
+          "selection": {},
+          "settings": {
+            "allowDownload": true
+          },
+          "schema": []
+        },
+        {
+          "id": "702b6e0e-a849-46f8-b31f-395b9d320e50",
+          "title": "Serveurs affectés par la CVE",
+          "query": "CALL apoc.when($neodash_ies_environment='TOUS', 'MATCH (ies:Ies) RETURN collect(DISTINCT ies.environment) AS envs', 'RETURN [$neodash_ies_environment] AS envs', {neodash_ies_environment:$neodash_ies_environment}) YIELD value\nMATCH (cve:CVE)<-[r:IS_AFFECTED_BY]-(server:Server)<-[r2:USES_SERVER]-(ies:Ies)-[:ENV_OF_INS]->(ins:Ins)\nWHERE ins.ins = $neodash_ins_ins AND ies.environment IN value.envs\nRETURN COUNT(DISTINCT server)",
+          "width": 3,
+          "height": 1,
+          "x": 6,
+          "y": 0,
+          "type": "value",
+          "selection": {},
+          "settings": {
+            "styleRules": [
+              {
+                "field": "",
+                "condition": "=",
+                "value": "",
+                "customization": "text color",
+                "customizationValue": "black"
+              }
+            ]
+          },
+          "schema": []
+        },
+        {
+          "id": "7b1bd3dd-6ef3-4092-b1d5-f74ff2fdd5dc",
+          "title": "Environnement à analyser",
+          "query": "MATCH (n:`Ies`) \nWHERE (toString(n.`environment`)) CONTAINS ($input) \nRETURN DISTINCT n.`environment` as value,  n.`environment` as display ORDER BY size(toString(value)) ASC LIMIT 10",
+          "width": 3,
+          "height": 1,
+          "x": 3,
+          "y": 0,
+          "type": "select",
+          "selection": {},
+          "settings": {
+            "type": "Node Property",
+            "entityType": "Ies",
+            "propertyType": "environment",
+            "propertyTypeDisplay": "environment",
+            "parameterName": "neodash_ies_environment",
+            "suggestionLimit": 10,
+            "caseSensitive": true,
+            "defaultValue": "TOUS"
+          },
+          "schema": []
+        },
+        {
+          "id": "7791c816-4b76-4358-8bb7-fe0a1c79e6ba",
+          "title": "CVE affectés à l'Ins",
+          "query": "CALL apoc.when($neodash_ies_environment='TOUS', 'MATCH (ies:Ies) RETURN collect(DISTINCT ies.environment) AS envs', 'RETURN [$neodash_ies_environment] AS envs', {neodash_ies_environment:$neodash_ies_environment}) YIELD value\nMATCH (cve:CVE)<-[r:IS_AFFECTED_BY]-(server:Server)<-[r2:USES_SERVER]-(ies:Ies)-[:ENV_OF_INS]->(ins:Ins)\nWHERE ins.ins = $neodash_ins_ins AND ies.environment IN value.envs\nRETURN COUNT(DISTINCT ins)",
+          "width": 3,
+          "height": 1,
+          "x": 9,
+          "y": 0,
+          "type": "value",
+          "selection": {},
+          "settings": {},
+          "schema": []
+        },
+        {
+          "id": "00d8e239-c2d3-4480-a664-5bdfd487c74c",
+          "title": "Ins à analyser",
+          "query": "MATCH (n:`Ins`) \nWHERE toLower(toString(n.`ins`)) CONTAINS toLower($input) \nRETURN DISTINCT n.`ins` as value,  n.`ins` as display ORDER BY size(toString(value)) ASC LIMIT 5",
+          "width": 3,
+          "height": 1,
+          "x": 0,
+          "y": 0,
+          "type": "select",
+          "selection": {},
+          "settings": {
+            "type": "Node Property",
+            "entityType": "Ins",
+            "propertyType": "ins",
+            "propertyTypeDisplay": "ins",
+            "parameterName": "neodash_ins_ins"
+          },
+          "schema": []
+        }
+      ]
+    }
+  ],
+  "parameters": {},
+  "extensions": {
+    "active": true,
+    "activeReducers": [],
+    "actions": {
+      "active": true
+    },
+    "styling": {
+      "active": true
+    },
+    "advanced-charts": {
+      "active": true
+    }
+  }
+}
